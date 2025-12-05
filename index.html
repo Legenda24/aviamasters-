@@ -8,7 +8,9 @@
   <!-- Предзагрузка -->
   <link rel="preload" href="fonts/BenzinBold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="video/promo.mp4" as="video" type="video/mp4">
+  <link rel="preload" href="video/promo2.mp4" as="video" type="video/mp4">
   <link rel="preload" href="images/preview.png" as="image">
+  <link rel="preload" href="images/preview_tow.png" as="image">
 
   <style>
     @font-face {
@@ -91,6 +93,41 @@
       display: block;
     }
 
+    /* Блок выбора игры */
+    #gameSelect {
+      margin-bottom: 25px;
+    }
+
+    #gameSelect h3 {
+      font-family: "BenzinBold";
+      font-size: 26px;
+      margin-bottom: 15px;
+      background: linear-gradient(135deg, #ffe176, #ff5858);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #gameSelect button {
+      padding: 14px 30px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      font-family: "BenzinBold", "Inter", sans-serif;
+      background: linear-gradient(135deg, #ffe176, #ff5858);
+      color: #fff;
+      font-size: clamp(16px, 4.5vw, 18px);
+      box-shadow: 0 6px 18px rgba(255, 90, 0, 0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #gameSelect button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 35px rgba(255, 90, 0, 0.6);
+    }
+
     .video-section {
       position: relative;
       border-radius: 20px;
@@ -98,6 +135,7 @@
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(15px);
+      display: none;
     }
 
     video {
@@ -111,6 +149,8 @@
 
     .play-button {
       margin-top: 25px;
+      margin-left: auto;
+      margin-right: auto;
       background: linear-gradient(135deg, #ff7b00, #ff2d55);
       color: white;
       font-family: "BenzinBold", "Inter", sans-serif;
@@ -124,11 +164,7 @@
       animation: pulse 2s infinite;
       width: 100%;
       max-width: 320px;
-    }
-
-    .play-button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 12px 25px rgba(255, 125, 0, 0.6);
+      display: none;
     }
 
     h2 {
@@ -155,11 +191,6 @@
       transition: all 0.3s ease;
       width: 100%;
       max-width: 300px;
-    }
-
-    .tg-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 35px rgba(0, 183, 255, 0.6);
     }
 
     /* Popup */
@@ -192,46 +223,30 @@
       max-width: 320px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(18px);
-      animation: scaleIn 0.4s ease forwards;
-    }
-
-    @keyframes scaleIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
-    .popup h3 {
-      font-family: "BenzinBold", "Inter", sans-serif;
-      font-size: clamp(18px, 5vw, 22px);
-      margin-bottom: 10px;
-      background: linear-gradient(135deg, #ffe176, #ff5858);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .popup p {
-      font-size: clamp(14px, 4vw, 16px);
-      color: #ddd;
-      margin-bottom: 25px;
-    }
-
-    .popup .tg-button {
-      font-size: clamp(14px, 4.5vw, 17px);
-      padding: 12px 26px;
     }
   </style>
 </head>
+
 <body>
-  <!-- Прелоадер -->
+
   <div id="preloader">
     <div class="plane"></div>
-    <div class="loading-text">Загрузка Aviamasters...</div>
+    <div class="loading-text">Загрузка игр...</div>
   </div>
 
   <div class="container" id="mainContent">
-    <div class="video-section">
+
+    <!-- Выбор игры -->
+    <div id="gameSelect">
+      <h3>Выбери игру</h3>
+
+      <button id="avi">✈️Aviamasters✈️</button>
+      <button id="tow">🏗️TowerRush🏗️</button>
+    </div>
+
+    <div class="video-section" id="videoSection">
       <video id="promoVideo" preload="auto" poster="image/preview.png" playsinline>
-        <source src="video/promo.mp4" type="video/mp4">
+        <source id="videoSrc" src="video/promo.mp4" type="video/mp4">
         Ваш браузер не поддерживает видео.
       </video>
     </div>
@@ -244,42 +259,76 @@
 
   <div class="popup" id="popup">
     <div class="popup-content">
-      <h3>💰 Вы могли выиграть 241 250 ₽!</h3>
-      <p>Попробуй прямо сейчас — удача может быть на твоей стороне.</p>
+      <h3 id="popupTitle">💰 Вы могли выиграть 241 250 ₽!</h3>
+      <p id="popupText">Попробуй прямо сейчас — удача может быть на твоей стороне.</p>
       <a href="https://t.me/+So6ed-EFwlQ2ZmI6" target="_blank" class="tg-button">Испытать удачу</a>
     </div>
   </div>
 
   <script>
     const video = document.getElementById('promoVideo');
+    const videoSrc = document.getElementById('videoSrc');
     const playBtn = document.getElementById('playBtn');
     const popup = document.getElementById('popup');
     const preloader = document.getElementById('preloader');
     const mainContent = document.getElementById('mainContent');
+    const gameSelect = document.getElementById('gameSelect');
+    const videoSection = document.getElementById('videoSection');
 
-    // Ждём полной загрузки контента
+    const popupTitle = document.getElementById('popupTitle');
+    const popupText = document.getElementById('popupText');
+
     window.addEventListener('load', () => {
-      // Даем браузеру чуть прогрузить видео и шрифт
       setTimeout(() => {
         preloader.classList.add('hidden');
         mainContent.classList.add('visible');
-        // Принудительно загружаем превью, если видео не сразу доступно
-        video.load();
       }, 500);
+    });
+
+    // Авиамастер
+    document.getElementById("avi").addEventListener("click", () => {
+      videoSrc.src = "video/promo.mp4";
+      video.poster = "images/preview.png";
+      video.load();
+
+      // старый текст
+      popupTitle.textContent = "💰 Вы могли выиграть 241 250 ₽!";
+      popupText.textContent = "Попробуй прямо сейчас — удача может быть на твоей стороне.";
+
+      gameSelect.style.display = "none";
+      videoSection.style.display = "block";
+      playBtn.style.display = "block";
+    });
+
+    // Товерраш
+    document.getElementById("tow").addEventListener("click", () => {
+      videoSrc.src = "video/promo2.mp4";
+      video.poster = "images/preview_tow.jpg";
+      video.load();
+
+      // новый текст
+      popupTitle.textContent = "💰 Вы могли выиграть 52 418 ₽!";
+      popupText.textContent = "Попробуй прямо сейчас — удача может быть на твоей стороне.";
+
+      gameSelect.style.display = "none";
+      videoSection.style.display = "block";
+      playBtn.style.display = "block";
     });
 
     // Кнопка "Испытать удачу"
     playBtn.addEventListener('click', () => {
       if (navigator.vibrate) navigator.vibrate(100);
       playBtn.style.display = 'none';
+
       video.muted = false;
       video.play().catch(() => {
-        // если браузер блокирует автоплей — разрешим со звуком вручную
         video.muted = true;
         video.play();
       });
+
       setTimeout(() => popup.classList.add('active'), 13000);
     });
   </script>
+
 </body>
 </html>
